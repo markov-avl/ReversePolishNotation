@@ -27,7 +27,7 @@ class Operation(Symbol):
         return self._degree
 
     def _push(self, stack_: Stack, output_: Output) -> None:
-        if self._priority == Priority.HIGH and stack_.get_top().priority == Priority.HIGH:
+        if self._priority == Priority.HIGH and len(stack_) > 0 and stack_.get_top().priority == Priority.HIGH:
             output_.push(stack_.pop_top())
         stack_.push(self)
 

@@ -1,3 +1,3 @@
 class Priority:
-    LOW = 1
-    HIGH = 2
+    LOW = 0
+    HIGH = 1

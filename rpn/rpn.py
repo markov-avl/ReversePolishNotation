@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Callable
 
 from .priorities import Priority
 from .space import Space
@@ -38,7 +38,7 @@ class RPN:
     def add_division(self) -> None:
         self._symbols[str(Division())] = Division
 
-    def add_operation(self, symbol: str, priority: Priority, function) -> None:
+    def add_operation(self, symbol: str, priority: Priority, function: Callable) -> None:
         Operation(symbol, priority, function)
         self._symbols[symbol] = lambda: Operation(symbol, priority, function)
 

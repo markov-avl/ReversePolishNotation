@@ -1,5 +1,6 @@
 from inspect import signature
 from operator import add, sub, mul, itruediv
+from typing import Callable
 
 from .brackets import OpeningBracket
 from .symbol import Symbol
@@ -9,14 +10,14 @@ from .priorities import Priority
 
 
 class Operation(Symbol):
-    def __init__(self, operation_symbol: str, priority: Priority, function) -> None:
-        super().__init__(operation_symbol)
+    def __init__(self, symbol: str, priority: Priority, function: Callable) -> None:
+        super().__init__(symbol)
         self._priority = priority
         self._degree = len(signature(function).parameters)
         if 1 <= self._degree <= 2:
             self._function = function
         else:
-            raise ValueError('Constants and operations higher than second degree are not supported =(')
+            raise ValueError('Only unary and binary operations are supported =(')
 
     @property
     def priority(self) -> Priority:
@@ -27,7 +28,7 @@ class Operation(Symbol):
         return self._degree
 
     def _push(self, stack_: Stack, output_: Output) -> None:
-        if self._priority == Priority.HIGH and len(stack_) > 0 and stack_.get_top().priority == Priority.HIGH:
+        if self._priority and len(stack_) > 0 and stack_.get_top().priority:
             output_.push(stack_.pop_top())
         stack_.push(self)
 

@@ -12,7 +12,7 @@ class Symbol:
             raise ValueError('A symbol must be represented by only one character')
 
     @abstractmethod
-    def push(self, stack_: Stack, output_: Output, last_symbol: any) -> None:
+    def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
         pass
 
     def __str__(self) -> str:

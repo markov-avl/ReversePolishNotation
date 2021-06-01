@@ -7,5 +7,5 @@ class Space(Symbol):
     def __init__(self) -> None:
         super().__init__(' ')
 
-    def push(self, stack_: Stack, output_: Output, last_symbol: any) -> None:
+    def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
         pass

@@ -26,7 +26,8 @@ def main():
     rpn.add_operation('±', Priority.HIGH, reverse_sign)
     rpn.add_all()
 
-    exp = '34 + 3! ^ 2±'
+    # (1-2) ^ (1/2) - ошибка
+    exp = '(1-2) ^ (1/2)'
     print(rpn.get_rpn_expression(exp))
     rpn.push_expression(exp)
     print(rpn.solve())

@@ -27,25 +27,33 @@ class Operation(Symbol):
     def degree(self) -> int:
         return self._degree
 
-    def _push(self, stack_: Stack, output_: Output) -> None:
-        if self._priority and len(stack_) > 0 and stack_.get_top().priority:
-            output_.push(stack_.pop_top())
-        stack_.push(self)
+    def _push(self, stack: Stack, output: Output) -> None:
+        if self._priority:
+            if self._degree == 1:
+                output.push(self)
+            if len(stack) > 0 and isinstance(stack.top(), Operation) and stack.top().priority:
+                output.push(stack.pop_top())
+            if self._degree == 2:
+                stack.push(self)
+        else:
+            if len(stack) > 0 and isinstance(stack.top(), Operation) and stack.top().priority:
+                output.push(stack.pop_top())
+            stack.push(self)
 
     # TODO: 4 + (-3) - такое нельзя, а надо бы, чтобы можно было
-    def push(self, stack_: Stack, output_: Output, last_symbol: any) -> None:
+    def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
         if isinstance(last_symbol, Operation) and last_symbol.degree == 2:
             raise SyntaxError('Operation cannot follow after second degree operation')
         elif type(last_symbol) == OpeningBracket:
             raise SyntaxError('Postfix operations cannot follow after opening bracket')
-        self._push(stack_, output_)
+        self._push(stack, output)
 
-    def push_out(self, stack_: Stack) -> None:
+    def push_out(self, stack: Stack) -> None:
         args = list()
         for _ in range(self._degree):
-            args.append(stack_.pop_top())
+            args.append(stack.pop_top())
         args.reverse()
-        stack_.push(self._function(*args))
+        stack.push(self._function(*args))
 
 
 class Plus(Operation):
@@ -56,6 +64,14 @@ class Plus(Operation):
 class Minus(Operation):
     def __init__(self) -> None:
         super().__init__('-', Priority.LOW, sub)
+
+    def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
+        if len(stack) + len(output) == 0 or isinstance(last_symbol, OpeningBracket):
+            output.push(0)
+            self._priority = Priority.HIGH
+            self._push(stack, output)
+        else:
+            super().push(stack, output, last_symbol)
 
 
 class Multiplication(Operation):

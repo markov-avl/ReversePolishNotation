@@ -74,7 +74,11 @@ class RPN:
             valid_symbol.push(self._stack, self._output, self.__last_symbol)
             if type(valid_symbol) != Space:
                 self.__last_symbol = valid_symbol
+        # if isinstance(self.__last_symbol, Operation) or isinstance(self.__last_symbol, OpeningBracket):
+        #     raise SyntaxError(f'Invalid ending of the expression: <{self.__last_symbol}>')
         for _ in range(len(self._stack)):
+            if isinstance(self._stack.top(), OpeningBracket):
+                raise SyntaxError('Too many opening brackets')
             self._output.push(self._stack.pop_top())
 
     def solve(self) -> Union[int, float]:
@@ -83,7 +87,7 @@ class RPN:
                 self._stack.push(item)
             else:
                 item.push_out(self._stack)
-        return self._stack.pop_top()
+        return int(self._stack.pop_top()) if float(self._stack.top()).is_integer() else self._stack.pop_top()
 
     def get_rpn_expression(self, expression: str) -> str:
         self.push_expression(expression)

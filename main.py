@@ -1,36 +1,43 @@
 from typing import Union
+from operator import pow
+from math import factorial
 
-from rpn import RPN, Priority
-
-
-def power(a: Union[int, float], b: Union[int, float]) -> Union[int, float]:
-    return a ** b
+from rpn import RPN, Builder, Fixation, Priority
 
 
-def factorial(a: Union[int, float]) -> int:
-    if float(a).is_integer() and int(a) >= 0:
-        a = int(a)
-        return 1 if a == 0 else factorial(a - 1) * a
-    else:
-        raise ValueError('Factorial is defined only on non-negative integers')
+def inc(a: Union[int, float, complex]) -> Union[int, float, complex]:
+    return a + 1
 
 
-def reverse_sign(a: Union[int, float]) -> Union[int, float]:
-    return a * -1
+def dec(a: Union[int, float, complex]) -> Union[int, float, complex]:
+    return a - 1
+
+
+def add(a, b):
+    return a + b
 
 
 def main():
     rpn = RPN()
-    rpn.add_operation('^', Priority.HIGH, power)
-    rpn.add_operation('!', Priority.HIGH, factorial)
-    rpn.add_operation('±', Priority.HIGH, reverse_sign)
-    rpn.add_all()
+    builder = Builder()
+    builder.creator = rpn.creator
 
-    # (1-2) ^ (1/2) - ошибка
-    exp = '(1-2) ^ (1/2)'
-    print(rpn.get_rpn_expression(exp))
-    rpn.push_expression(exp)
-    print(rpn.solve())
+    builder.add_space()
+
+    # builder.add_binary_operation(' ', add, Priority.LOW)
+
+    # builder.add_unary_operation('!', factorial, Fixation.POSTFIX)
+    # builder.add_unary_operation('↑', inc, Fixation.POSTFIX)
+    # builder.add_unary_operation('↓', dec, Fixation.PREFIX)
+    # builder.add_binary_operation('^', pow, Priority.HIGH)
+    # builder.add_all()
+
+    # expression = '↓1↑↑↑ + 7 ^ 2 + 4!'
+    expression = '1 4 0 33'  # в таком случае тогда пробел будет работать как конкатенация D:
+
+    print(rpn.get_rpn_expression(expression))
+    rpn.push_expression(expression)
+    print(rpn.solve())  # -> 14033
 
 
 if __name__ == '__main__':

@@ -1,100 +1,65 @@
-from typing import Union, Callable
+from typing import Union
 
-from .priorities import Priority
+from .operations import UnaryOperation, BinaryOperation
 from .space import Space
-from .digit import Digit
-from .operations import Operation, Plus, Minus, Multiplication, Division
-from .brackets import OpeningBracket, ClosingBracket
+from .brackets import OpeningBracket
 
 from .stack import Stack
 from .output import Output
+from .creator import Creator
 
 
 class RPN:
     def __init__(self) -> None:
         self._stack = Stack()
         self._output = Output()
-        self._symbols = dict()
-        self.__digits = '0123456789'
-        self.__last_symbol = None
+        self._creator = Creator()
+        self._last_symbol = None
+
+    @property
+    def creator(self) -> Creator:
+        return self._creator
+
+    @creator.setter
+    def creator(self, creator: Creator) -> None:
+        self._creator = creator
 
     def _clear(self) -> None:
         self._stack.clear()
         self._output.clear()
-        self.__last_symbol = None
+        self._last_symbol = None
 
-    def add_space(self) -> None:
-        self._symbols[str(Space())] = Space
-
-    def add_plus(self) -> None:
-        self._symbols[str(Plus())] = Plus
-
-    def add_minus(self) -> None:
-        self._symbols[str(Minus())] = Minus
-
-    def add_multiplication(self) -> None:
-        self._symbols[str(Multiplication())] = Multiplication
-
-    def add_division(self) -> None:
-        self._symbols[str(Division())] = Division
-
-    def add_operation(self, symbol: str, priority: Priority, function: Callable) -> None:
-        Operation(symbol, priority, function)
-        self._symbols[symbol] = lambda: Operation(symbol, priority, function)
-
-    def add_standard_operations(self) -> None:
-        self.add_plus()
-        self.add_minus()
-        self.add_multiplication()
-        self.add_division()
-
-    def add_brackets(self) -> None:
-        self._symbols[str(OpeningBracket())] = OpeningBracket
-        self._symbols[str(ClosingBracket())] = ClosingBracket
-
-    def add_all(self) -> None:
-        self.add_space()
-        self.add_standard_operations()
-        self.add_brackets()
-
-    def clear_symbols(self) -> None:
-        self._symbols.clear()
-
-    # TODO: до сих пор не работают скобки
-    def push_expression(self, expression: str) -> None:
-        self._clear()
-        for symbol in expression:
-            # TODO: лучше добавить фабрику
-            if symbol in self._symbols:
-                valid_symbol = self._symbols[symbol]()
-            elif symbol in self.__digits:
-                valid_symbol = Digit(symbol)
-            else:
-                raise SyntaxError(f'Found invalid symbol: <{symbol}>')
-            valid_symbol.push(self._stack, self._output, self.__last_symbol)
-            if type(valid_symbol) != Space:
-                self.__last_symbol = valid_symbol
-        # if isinstance(self.__last_symbol, Operation) or isinstance(self.__last_symbol, OpeningBracket):
-        #     raise SyntaxError(f'Invalid ending of the expression: <{self.__last_symbol}>')
+    def _push_from_stack_to_output(self):
         for _ in range(len(self._stack)):
             if isinstance(self._stack.top(), OpeningBracket):
                 raise SyntaxError('Too many opening brackets')
             self._output.push(self._stack.pop_top())
 
-    def solve(self) -> Union[int, float]:
+    def push_expression(self, expression: str) -> None:
+        self._clear()
+        for symbol in expression:
+            valid_symbol = self._creator.create(symbol)
+            valid_symbol.push(self._stack, self._output, self._last_symbol)
+            if not isinstance(valid_symbol, Space):
+                self._last_symbol = valid_symbol
+        if isinstance(self._last_symbol, UnaryOperation) and not self._last_symbol.fixation \
+                or isinstance(self._last_symbol, BinaryOperation) or isinstance(self._last_symbol, OpeningBracket):
+            raise SyntaxError(f'Invalid ending of the expression: <{self._last_symbol}>')
+        self._push_from_stack_to_output()
+
+    def solve(self) -> Union[int, float, complex]:
         for item in self._output:
             if isinstance(item, int):
                 self._stack.push(item)
             else:
                 item.push_out(self._stack)
-        return int(self._stack.pop_top()) if float(self._stack.top()).is_integer() else self._stack.pop_top()
+        if not isinstance(self._stack.top(), complex) and float(self._stack.top()).is_integer():
+            return int(self._stack.pop_top())
+        return self._stack.pop_top()
 
     def get_rpn_expression(self, expression: str) -> str:
         self.push_expression(expression)
         return ' '.join(map(str, self._output))
-
-    def solve_rpn_expression(self, rpn_expression: str) -> Union[int, float]:
-        pass
 
     def solve_expression(self, expression: str) -> Union[int, float]:
         self.push_expression(expression)

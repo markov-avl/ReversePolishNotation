@@ -61,6 +61,6 @@ class RPN:
         self.push_expression(expression)
         return ' '.join(map(str, self._output))
 
-    def solve_expression(self, expression: str) -> Union[int, float]:
+    def solve_expression(self, expression: str) -> Union[int, float, complex]:
         self.push_expression(expression)
         return self.solve()

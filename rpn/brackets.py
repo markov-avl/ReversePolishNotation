@@ -7,7 +7,7 @@ class OpeningBracket(Symbol):
     def __init__(self) -> None:
         super().__init__('(')
 
-    def push(self, stack: Stack, ouput_: Output, last_symbol: any) -> None:
+    def push(self, stack: Stack, ouput: Output, last_symbol: any) -> None:
         stack.push(self)
 
 

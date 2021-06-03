@@ -1,6 +1,6 @@
 from typing import Callable
 
-from .creator import Creator
+from .alphabet import Alphabet
 
 from .operations import UnaryOperation, BinaryOperation, Plus, Minus, Multiplication, Division
 from .parameters import Fixation, Priority
@@ -9,16 +9,16 @@ from .space import Space
 from .brackets import OpeningBracket, ClosingBracket
 
 
-class Builder:
+class Customizer:
     def __init__(self) -> None:
         self._creator = None
 
     @property
-    def creator(self) -> Creator:
+    def creator(self) -> Alphabet:
         return self.creator
 
     @creator.setter
-    def creator(self, creator: Creator) -> None:
+    def creator(self, creator: Alphabet) -> None:
         self._creator = creator
 
     def add_plus(self) -> None:

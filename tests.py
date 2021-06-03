@@ -3,12 +3,12 @@ from typing import Union
 from operator import add, sub, pow
 from math import factorial
 
-from rpn import RPN, Builder, Creator, Fixation, Priority
+from rpn import RPN, Customizer, Alphabet, Fixation, Priority
 
 
 class RPNTestCase(unittest.TestCase):
     _rpn = RPN()
-    _builder = Builder()
+    _builder = Customizer()
     
     @staticmethod
     def inc(a: Union[int, float, complex]) -> Union[int, float, complex]:
@@ -37,9 +37,9 @@ class RPNTestCase(unittest.TestCase):
 
     # Пробел считается символом, который ничего не значит. Например, запись "1 2" распознается в итоге как "12"
     def testSpace(self) -> None:
-        self._rpn.creator = self._builder.creator = Creator()
+        self._rpn.creator = self._builder.creator = Alphabet()
         self._builder.add_space()
-        
+
         self.assertEqual(self._rpn.get_rpn_expression('12345 6789'), '123456789')
         self.assertEqual(self._rpn.solve(), 123456789)
         self.assertEqual(self._rpn.get_rpn_expression('0  100'), '100')
@@ -48,10 +48,10 @@ class RPNTestCase(unittest.TestCase):
         self.assertEqual(self._rpn.solve(), 0)
 
     def testStandardOperations(self) -> None:
-        self._rpn.creator = self._builder.creator = Creator()
+        self._rpn.creator = self._builder.creator = Alphabet()
         self._builder.add_space()
         self._builder.add_standard_operations()
-        
+
         self.assertEqual(self._rpn.get_rpn_expression('1 + 2 - 3 * 4 / 5'), '1 2 + 3 4 * 5 / -')
         self.assertAlmostEqual(self._rpn.solve(), 0.6)
         self.assertEqual(self._rpn.get_rpn_expression('-4 - 32 * 2 + 9 / 3 - 1'), '4 - 32 2 * - 9 3 / + 1 -')
@@ -60,7 +60,7 @@ class RPNTestCase(unittest.TestCase):
         self.assertAlmostEqual(self._rpn.solve(), 75)
 
     def testBrackets(self) -> None:
-        self._rpn.creator = self._builder.creator = Creator()
+        self._rpn.creator = self._builder.creator = Alphabet()
         self._builder.add_space()
         self._builder.add_standard_operations()
         self._builder.add_brackets()
@@ -75,7 +75,7 @@ class RPNTestCase(unittest.TestCase):
         self.assertAlmostEqual(self._rpn.solve(), 0.125)
 
     def testSelfWrittenOperations(self) -> None:
-        self._rpn.creator = self._builder.creator = Creator()
+        self._rpn.creator = self._builder.creator = Alphabet()
         self._builder.add_all()
         self._builder.add_unary_operation('!', factorial, Fixation.POSTFIX)
         self._builder.add_unary_operation('↑', self.inc, Fixation.POSTFIX)
@@ -91,7 +91,7 @@ class RPNTestCase(unittest.TestCase):
 
     # Переопределение уже существующей операции не является ошибкой, поэтому с этим стоит быть осторожно.
     def testOperationOverride(self) -> None:
-        self._rpn.creator = self._builder.creator = Creator()
+        self._rpn.creator = self._builder.creator = Alphabet()
         self._builder.add_all()
         self._builder.add_binary_operation('+', sub, Priority.LOW)
         self._builder.add_binary_operation('-', add, Priority.LOW)
@@ -109,7 +109,7 @@ class RPNTestCase(unittest.TestCase):
         self.assertAlmostEqual(self._rpn.solve(), 134)
 
     def testEmptyExpression(self) -> None:
-        self._rpn.creator = self._builder.creator = Creator()
+        self._rpn.creator = self._builder.creator = Alphabet()
         self._builder.add_all()
 
         self.assertEqual(self._rpn.get_rpn_expression(''), '')
@@ -123,7 +123,7 @@ class RPNTestCase(unittest.TestCase):
 
     def testSyntaxError(self) -> None:
         # Найдены неизвестные символы:
-        self._rpn.creator = Creator()
+        self._rpn.creator = Alphabet()
         self.assertRaises(SyntaxError, self._rpn.push_expression, '1 2')
         self.assertRaises(SyntaxError, self._rpn.push_expression, '1+2')
         self.assertRaises(SyntaxError, self._rpn.push_expression, '1_2')
@@ -156,7 +156,7 @@ class RPNTestCase(unittest.TestCase):
         self.assertRaises(SyntaxError, self._rpn.push_expression, '↑↑')
 
     def testValueError(self) -> None:
-        self._rpn.creator = self._builder.creator = Creator()
+        self._rpn.creator = self._builder.creator = Alphabet()
         self._builder.add_all()
 
         # Добавление операции с недопустимым символом:

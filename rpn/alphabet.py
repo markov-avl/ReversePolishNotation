@@ -4,7 +4,7 @@ from .symbol import Symbol
 from .digit import Digit
 
 
-class Creator:
+class Alphabet:
     _digits = '0123456789'
 
     def __init__(self) -> None:

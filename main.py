@@ -2,7 +2,7 @@ from typing import Union
 from operator import pow
 from math import factorial
 
-from rpn import RPN, Builder, Creator, Fixation, Priority
+from rpn import RPN, Customizer, Alphabet, Fixation, Priority
 
 
 def inc(a: Union[int, float, complex]) -> Union[int, float, complex]:
@@ -15,8 +15,8 @@ def dec(a: Union[int, float, complex]) -> Union[int, float, complex]:
 
 def main():
     rpn = RPN()
-    builder = Builder()
-    rpn.creator = builder.creator = Creator()  # или просто builder.creator = rpn.creator
+    builder = Customizer()
+    rpn.creator = builder.creator = Alphabet()  # или просто builder.creator = rpn.creator
 
     builder.add_all()
     builder.add_unary_operation('!', factorial, Fixation.POSTFIX)

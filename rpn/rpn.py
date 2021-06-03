@@ -6,22 +6,22 @@ from .brackets import OpeningBracket
 
 from .stack import Stack
 from .output import Output
-from .creator import Creator
+from .alphabet import Alphabet
 
 
 class RPN:
     def __init__(self) -> None:
         self._stack = Stack()
         self._output = Output()
-        self._creator = Creator()
+        self._creator = Alphabet()
         self._last_symbol = None
 
     @property
-    def creator(self) -> Creator:
+    def creator(self) -> Alphabet:
         return self._creator
 
     @creator.setter
-    def creator(self, creator: Creator) -> None:
+    def creator(self, creator: Alphabet) -> None:
         self._creator = creator
 
     def _clear(self) -> None:

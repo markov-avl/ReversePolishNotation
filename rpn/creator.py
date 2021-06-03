@@ -10,7 +10,12 @@ class Creator:
     def __init__(self) -> None:
         self._symbols = dict()
 
+    def _check_symbol(self, symbol: str) -> None:
+        if symbol in self._digits:
+            raise ValueError('Cannot override digit')
+
     def add(self, symbol: str, constructor: Callable) -> None:
+        self._check_symbol(symbol)
         self._symbols[symbol] = constructor
 
     def clear(self) -> None:

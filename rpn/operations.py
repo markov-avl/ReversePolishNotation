@@ -1,13 +1,17 @@
 from abc import ABC, abstractmethod
 from inspect import signature
 from operator import add, sub, mul, itruediv
-from typing import Callable
+from typing import Callable, Union
 
 from .brackets import OpeningBracket, ClosingBracket
 from .symbol import Symbol
 from .stack import Stack
 from .output import Output
 from .parameters import Fixation, Priority
+
+
+def reverse_sign(a: Union[int, float, complex]) -> Union[int, float, complex]:
+    return -a
 
 
 class Operation(Symbol, ABC):
@@ -86,7 +90,8 @@ class BinaryOperation(Operation):
         self._push(stack, output)
 
     def _push(self, stack: Stack, output: Output) -> None:
-        if isinstance(stack.top(), BinaryOperation) and stack.top().priority:
+        while isinstance(stack.top(), UnaryOperation) and not stack.top().fixation or \
+                isinstance(stack.top(), BinaryOperation) and stack.top().priority >= self._priority:
             output.push(stack.pop())
         stack.push(self)
 
@@ -101,10 +106,9 @@ class Minus(BinaryOperation):
         super().__init__('-', sub, Priority.LOW)
 
     def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
-        if len(stack) + len(output) == 0 or isinstance(last_symbol, OpeningBracket):
-            output.push(0)
-            self._priority = Priority.HIGH
-            self._push(stack, output)
+        if last_symbol is None or isinstance(last_symbol, OpeningBracket):
+            unary_minus = UnaryOperation('-', reverse_sign, Fixation.PREFIX)
+            unary_minus.push(stack, output, last_symbol)
         else:
             super().push(stack, output, last_symbol)
 

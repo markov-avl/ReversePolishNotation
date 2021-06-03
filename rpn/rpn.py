@@ -17,11 +17,11 @@ class RPN:
         self._last_symbol = None
 
     @property
-    def creator(self) -> Alphabet:
+    def alphabet(self) -> Alphabet:
         return self._creator
 
-    @creator.setter
-    def creator(self, creator: Alphabet) -> None:
+    @alphabet.setter
+    def alphabet(self, creator: Alphabet) -> None:
         self._creator = creator
 
     def _clear(self) -> None:

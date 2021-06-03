@@ -14,11 +14,11 @@ class Customizer:
         self._creator = None
 
     @property
-    def creator(self) -> Alphabet:
-        return self.creator
+    def alphabet(self) -> Alphabet:
+        return self.alphabet
 
-    @creator.setter
-    def creator(self, creator: Alphabet) -> None:
+    @alphabet.setter
+    def alphabet(self, creator: Alphabet) -> None:
         self._creator = creator
 
     def add_plus(self) -> None:

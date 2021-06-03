@@ -16,7 +16,7 @@ def dec(a: Union[int, float, complex]) -> Union[int, float, complex]:
 def main():
     rpn = RPN()
     builder = Customizer()
-    rpn.creator = builder.creator = Alphabet()  # или просто builder.creator = rpn.creator
+    rpn.alphabet = builder.alphabet = Alphabet()  # или просто builder.creator = rpn.creator
 
     builder.add_all()
     builder.add_unary_operation('!', factorial, Fixation.POSTFIX)

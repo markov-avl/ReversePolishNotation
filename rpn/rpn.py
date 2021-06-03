@@ -42,8 +42,8 @@ class RPN:
             valid_symbol.push(self._stack, self._output, self._last_symbol)
             if not isinstance(valid_symbol, Space):
                 self._last_symbol = valid_symbol
-        if isinstance(self._last_symbol, UnaryOperation) and not self._last_symbol.fixation \
-                or isinstance(self._last_symbol, BinaryOperation) or isinstance(self._last_symbol, OpeningBracket):
+        if isinstance(self._last_symbol, UnaryOperation) and not self._last_symbol.fixation or \
+                isinstance(self._last_symbol, BinaryOperation) or isinstance(self._last_symbol, OpeningBracket):
             raise SyntaxError(f'Invalid ending of the expression: <{self._last_symbol}>')
         self._push_from_stack_to_output()
 
@@ -53,9 +53,10 @@ class RPN:
                 self._stack.push(item)
             else:
                 item.push_out(self._stack)
-        if not isinstance(self._stack.top(), complex) and float(self._stack.top()).is_integer():
+        if self._stack.top() is not None and not isinstance(self._stack.top(), complex) and \
+                float(self._stack.top()).is_integer():
             return int(self._stack.pop())
-        return self._stack.pop()
+        return self._stack.pop() if len(self._stack) else None
 
     def get_rpn_expression(self, expression: str) -> str:
         self.push_expression(expression)

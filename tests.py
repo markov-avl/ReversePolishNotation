@@ -18,6 +18,14 @@ class RPNTestCase(unittest.TestCase):
     def dec(a: Union[int, float, complex]) -> Union[int, float, complex]:
         return a - 1
 
+    @staticmethod
+    def constant() -> int:
+        return 0
+
+    @staticmethod
+    def multiple_operation(*args, **kwargs):
+        return sum(args, kwargs.values())
+
     # Самым простым выражением считается просто число. Экземпляры класса RPN по умолчанию умеют решать такие выражения.
     def testSimplestExpression(self) -> None:
         self.assertEqual(self._rpn.get_rpn_expression('123456789'), '123456789')
@@ -63,7 +71,7 @@ class RPNTestCase(unittest.TestCase):
         self.assertAlmostEqual(self._rpn.solve(), 63)
         self.assertEqual(self._rpn.get_rpn_expression('-3 * (8 + 99) / 1'), '3 - 8 99 + * 1 /')
         self.assertAlmostEqual(self._rpn.solve(), -321)
-        self.assertEqual(self._rpn.get_rpn_expression('(1 / 2) * (1 / 4)'), '1 2 / 1 4 / *')
+        self.assertEqual(self._rpn.get_rpn_expression('(1 / 2) * () (1 / 4)'), '1 2 / 1 4 / *')
         self.assertAlmostEqual(self._rpn.solve(), 0.125)
 
     def testSelfWrittenOperations(self) -> None:
@@ -74,7 +82,7 @@ class RPNTestCase(unittest.TestCase):
         self._builder.add_unary_operation('↓', self.dec, Fixation.PREFIX)
         self._builder.add_binary_operation('^', pow, Priority.HIGH)
 
-        self.assertEqual(self._rpn.get_rpn_expression('↓1↑↑↑ + 7 ^ 2 + 4!'), '1 ↓ ↑ ↑ ↑ 7 2 ^ + 4 ! +')
+        self.assertEqual(self._rpn.get_rpn_expression('↓↓1↑↑↑↑ + 7 ^ 2 + 4!'), '1 ↓ ↑ ↑ ↑ ↑ ↓ 7 2 ^ + 4 ! +')
         self.assertAlmostEqual(self._rpn.solve(), 76)
         self.assertEqual(self._rpn.get_rpn_expression('-1↑! + ↓7 ^ (2 * (1 + 1)!)'), '1 - ↑ ! 7 ↓ 2 1 1 + ! * ^ +')
         self.assertAlmostEqual(self._rpn.solve(), 1297)
@@ -99,6 +107,68 @@ class RPNTestCase(unittest.TestCase):
 
         self.assertEqual(self._rpn.get_rpn_expression('4 89 29 1 8 3'), '4 89 + 29 + 1 + 8 + 3 +'.replace('+', ' '))
         self.assertAlmostEqual(self._rpn.solve(), 134)
+
+    def testEmptyExpression(self) -> None:
+        self._rpn.creator = self._builder.creator = Creator()
+        self._builder.add_all()
+
+        self.assertEqual(self._rpn.get_rpn_expression(''), '')
+        self.assertEqual(self._rpn.solve(), None)
+        self.assertEqual(self._rpn.get_rpn_expression('()'), '')
+        self.assertEqual(self._rpn.solve(), None)
+        self.assertEqual(self._rpn.get_rpn_expression('(())'), '')
+        self.assertEqual(self._rpn.solve(), None)
+        self.assertEqual(self._rpn.get_rpn_expression('( )'), '')
+        self.assertEqual(self._rpn.solve(), None)
+
+    def testSyntaxError(self) -> None:
+        # Найдены неизвестные символы:
+        self._rpn.creator = Creator()
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1+2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1_2')
+
+        # Нарушение языка выражений:
+        self._builder.creator = self._rpn.creator
+        self._builder.add_all()
+        self._builder.add_unary_operation('↑', self.inc, Fixation.POSTFIX)
+        self._builder.add_unary_operation('↓', self.dec, Fixation.PREFIX)
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '+')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '*')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '(')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, ')')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 +')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 *')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 (')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 )')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 + -2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 + + 2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 * * 2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '+1')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '*1')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 + (-2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1 + ((-2)')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1) + 2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '(1)) + 2')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '1↓')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '↑1')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '↓↓')
+        self.assertRaises(SyntaxError, self._rpn.push_expression, '↑↑')
+
+    def testValueError(self) -> None:
+        self._rpn.creator = self._builder.creator = Creator()
+        self._builder.add_all()
+
+        # Добавление операции с недопустимым символом:
+        self.assertRaises(ValueError, self._builder.add_binary_operation, '', add, Priority.LOW)
+        self.assertRaises(ValueError, self._builder.add_binary_operation, '0', add, Priority.LOW)
+        self.assertRaises(ValueError, self._builder.add_binary_operation, 'add', add, Priority.LOW)
+
+        # Нарушение соглашения об унарности/бинарности новой операции:
+        self.assertRaises(ValueError, self._builder.add_unary_operation, 'o', self.constant, Fixation.PREFIX)
+        self.assertRaises(ValueError, self._builder.add_unary_operation, '+', self.multiple_operation, Fixation.PREFIX)
+        self.assertRaises(ValueError, self._builder.add_binary_operation, 'o', self.constant, Priority.HIGH)
+        self.assertRaises(ValueError, self._builder.add_binary_operation, '+', self.multiple_operation, Priority.HIGH)
 
 
 if __name__ == '__main__':

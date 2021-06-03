@@ -19,6 +19,9 @@ class Operation(Symbol, ABC):
         super().__init__(symbol)
         self._function = function
         self._degree = len(signature(function).parameters)
+        args = map(str, dict(signature(function).parameters).values())
+        if '*args' in args or '**kwargs' in args:
+            self._degree = -1
 
     @property
     def degree(self) -> int:
@@ -54,8 +57,10 @@ class UnaryOperation(Operation):
     def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
         if self._fixation:
             if isinstance(last_symbol, UnaryOperation) and not last_symbol.fixation \
-                    or isinstance(last_symbol, BinaryOperation) or isinstance(last_symbol, OpeningBracket):
-                raise SyntaxError('Postfix unary operation cannot follow after other operation and opening bracket')
+                    or isinstance(last_symbol, BinaryOperation) or isinstance(last_symbol, OpeningBracket) \
+                    or last_symbol is None:
+                raise SyntaxError('Postfix unary operation cannot follow after empty space, other operation '
+                                  'and opening bracket')
         else:
             if isinstance(last_symbol, ClosingBracket):
                 raise SyntaxError('Prefix unary operation cannot follow after another prefix unary operation '
@@ -65,7 +70,7 @@ class UnaryOperation(Operation):
     def _push(self, stack: Stack, output: Output) -> None:
         if self._fixation:
             output.push(self)
-            if len(stack) and isinstance(stack.top(), BinaryOperation) and stack.top().priority:
+            if isinstance(stack.top(), BinaryOperation) and stack.top().priority:
                 output.push(stack.pop())
         else:
             stack.push(self)
@@ -84,7 +89,8 @@ class BinaryOperation(Operation):
 
     def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
         if isinstance(last_symbol, UnaryOperation) and not last_symbol.fixation or \
-                isinstance(last_symbol, BinaryOperation) or isinstance(last_symbol, OpeningBracket):
+                isinstance(last_symbol, BinaryOperation) or isinstance(last_symbol, OpeningBracket) or \
+                last_symbol is None:
             raise SyntaxError('Binary operation cannot follow after prefix unary operation, another binary operation'
                               'and opening bracket')
         self._push(stack, output)

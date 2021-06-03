@@ -15,14 +15,14 @@ def dec(a: Union[int, float, complex]) -> Union[int, float, complex]:
 
 def main():
     rpn = RPN()
-    builder = Customizer()
-    rpn.alphabet = builder.alphabet = Alphabet()  # или просто builder.creator = rpn.creator
+    customizer = Customizer()
+    rpn.alphabet = customizer.alphabet = Alphabet()  # или просто builder.creator = rpn.creator
 
-    builder.add_all()
-    builder.add_unary_operation('!', factorial, Fixation.POSTFIX)
-    builder.add_unary_operation('↑', inc, Fixation.POSTFIX)
-    builder.add_unary_operation('↓', dec, Fixation.PREFIX)
-    builder.add_binary_operation('^', pow, Priority.HIGH)
+    customizer.add_all()
+    customizer.add_unary_operation('!', factorial, Fixation.POSTFIX)
+    customizer.add_unary_operation('↑', inc, Fixation.POSTFIX)
+    customizer.add_unary_operation('↓', dec, Fixation.PREFIX)
+    customizer.add_binary_operation('^', pow, Priority.HIGH)
 
     expression = '↓7↑ * 7 ^ (2 + 2)!'
 

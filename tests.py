@@ -8,7 +8,7 @@ from rpn import RPN, Customizer, Alphabet, Fixation, Priority
 
 class RPNTestCase(unittest.TestCase):
     _rpn = RPN()
-    _builder = Customizer()
+    _customizer = Customizer()
     
     @staticmethod
     def inc(a: Union[int, float, complex]) -> Union[int, float, complex]:
@@ -37,8 +37,8 @@ class RPNTestCase(unittest.TestCase):
 
     # Пробел считается символом, который ничего не значит. Например, запись "1 2" распознается в итоге как "12"
     def testSpace(self) -> None:
-        self._rpn.alphabet = self._builder.alphabet = Alphabet()
-        self._builder.add_space()
+        self._rpn.alphabet = self._customizer.alphabet = Alphabet()
+        self._customizer.add_space()
 
         self.assertEqual(self._rpn.get_rpn_expression('12345 6789'), '123456789')
         self.assertEqual(self._rpn.solve(), 123456789)
@@ -48,9 +48,9 @@ class RPNTestCase(unittest.TestCase):
         self.assertEqual(self._rpn.solve(), 0)
 
     def testStandardOperations(self) -> None:
-        self._rpn.alphabet = self._builder.alphabet = Alphabet()
-        self._builder.add_space()
-        self._builder.add_standard_operations()
+        self._rpn.alphabet = self._customizer.alphabet = Alphabet()
+        self._customizer.add_space()
+        self._customizer.add_standard_operations()
 
         self.assertEqual(self._rpn.get_rpn_expression('1 + 2 - 3 * 4 / 5'), '1 2 + 3 4 * 5 / -')
         self.assertAlmostEqual(self._rpn.solve(), 0.6)
@@ -60,10 +60,10 @@ class RPNTestCase(unittest.TestCase):
         self.assertAlmostEqual(self._rpn.solve(), 75)
 
     def testBrackets(self) -> None:
-        self._rpn.alphabet = self._builder.alphabet = Alphabet()
-        self._builder.add_space()
-        self._builder.add_standard_operations()
-        self._builder.add_brackets()
+        self._rpn.alphabet = self._customizer.alphabet = Alphabet()
+        self._customizer.add_space()
+        self._customizer.add_standard_operations()
+        self._customizer.add_brackets()
         
         self.assertEqual(self._rpn.get_rpn_expression('(1 + 2) - 3 * (4 / 4)'), '1 2 + 3 4 4 / * -')
         self.assertAlmostEqual(self._rpn.solve(), 0)
@@ -75,12 +75,12 @@ class RPNTestCase(unittest.TestCase):
         self.assertAlmostEqual(self._rpn.solve(), 0.125)
 
     def testSelfWrittenOperations(self) -> None:
-        self._rpn.alphabet = self._builder.alphabet = Alphabet()
-        self._builder.add_all()
-        self._builder.add_unary_operation('!', factorial, Fixation.POSTFIX)
-        self._builder.add_unary_operation('↑', self.inc, Fixation.POSTFIX)
-        self._builder.add_unary_operation('↓', self.dec, Fixation.PREFIX)
-        self._builder.add_binary_operation('^', pow, Priority.HIGH)
+        self._rpn.alphabet = self._customizer.alphabet = Alphabet()
+        self._customizer.add_all()
+        self._customizer.add_unary_operation('!', factorial, Fixation.POSTFIX)
+        self._customizer.add_unary_operation('↑', self.inc, Fixation.POSTFIX)
+        self._customizer.add_unary_operation('↓', self.dec, Fixation.PREFIX)
+        self._customizer.add_binary_operation('^', pow, Priority.HIGH)
 
         self.assertEqual(self._rpn.get_rpn_expression('↓↓1↑↑↑↑ + 7 ^ 2 + 4!'), '1 ↓ ↑ ↑ ↑ ↑ ↓ 7 2 ^ + 4 ! +')
         self.assertAlmostEqual(self._rpn.solve(), 76)
@@ -91,10 +91,10 @@ class RPNTestCase(unittest.TestCase):
 
     # Переопределение уже существующей операции не является ошибкой, поэтому с этим стоит быть осторожно.
     def testOperationOverride(self) -> None:
-        self._rpn.alphabet = self._builder.alphabet = Alphabet()
-        self._builder.add_all()
-        self._builder.add_binary_operation('+', sub, Priority.LOW)
-        self._builder.add_binary_operation('-', add, Priority.LOW)
+        self._rpn.alphabet = self._customizer.alphabet = Alphabet()
+        self._customizer.add_all()
+        self._customizer.add_binary_operation('+', sub, Priority.LOW)
+        self._customizer.add_binary_operation('-', add, Priority.LOW)
 
         self.assertEqual(self._rpn.get_rpn_expression('100 + 50 + 25'), '100 50 + 25 +')
         self.assertAlmostEqual(self._rpn.solve(), 25)
@@ -103,14 +103,14 @@ class RPNTestCase(unittest.TestCase):
         self.assertEqual(self._rpn.get_rpn_expression('100 * 2 + 50 * 2 - 25 * 2'), '100 2 * 50 2 * + 25 2 * -')
         self.assertAlmostEqual(self._rpn.solve(), 150)
 
-        self._builder.add_binary_operation(' ', add, Priority.LOW)
+        self._customizer.add_binary_operation(' ', add, Priority.LOW)
 
         self.assertEqual(self._rpn.get_rpn_expression('4 89 29 1 8 3'), '4 89 + 29 + 1 + 8 + 3 +'.replace('+', ' '))
         self.assertAlmostEqual(self._rpn.solve(), 134)
 
     def testEmptyExpression(self) -> None:
-        self._rpn.alphabet = self._builder.alphabet = Alphabet()
-        self._builder.add_all()
+        self._rpn.alphabet = self._customizer.alphabet = Alphabet()
+        self._customizer.add_all()
 
         self.assertEqual(self._rpn.get_rpn_expression(''), '')
         self.assertEqual(self._rpn.solve(), None)
@@ -129,10 +129,10 @@ class RPNTestCase(unittest.TestCase):
         self.assertRaises(SyntaxError, self._rpn.push_expression, '1_2')
 
         # Нарушение языка выражений:
-        self._builder.alphabet = self._rpn.alphabet
-        self._builder.add_all()
-        self._builder.add_unary_operation('↑', self.inc, Fixation.POSTFIX)
-        self._builder.add_unary_operation('↓', self.dec, Fixation.PREFIX)
+        self._customizer.alphabet = self._rpn.alphabet
+        self._customizer.add_all()
+        self._customizer.add_unary_operation('↑', self.inc, Fixation.POSTFIX)
+        self._customizer.add_unary_operation('↓', self.dec, Fixation.PREFIX)
         self.assertRaises(SyntaxError, self._rpn.push_expression, '+')
         self.assertRaises(SyntaxError, self._rpn.push_expression, '*')
         self.assertRaises(SyntaxError, self._rpn.push_expression, '(')
@@ -156,19 +156,21 @@ class RPNTestCase(unittest.TestCase):
         self.assertRaises(SyntaxError, self._rpn.push_expression, '↑↑')
 
     def testValueError(self) -> None:
-        self._rpn.alphabet = self._builder.alphabet = Alphabet()
-        self._builder.add_all()
+        self._rpn.alphabet = self._customizer.alphabet = Alphabet()
+        self._customizer.add_all()
 
         # Добавление операции с недопустимым символом:
-        self.assertRaises(ValueError, self._builder.add_binary_operation, '', add, Priority.LOW)
-        self.assertRaises(ValueError, self._builder.add_binary_operation, '0', add, Priority.LOW)
-        self.assertRaises(ValueError, self._builder.add_binary_operation, 'add', add, Priority.LOW)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, '', add, Priority.LOW)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, '0', add, Priority.LOW)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, 'add', add, Priority.LOW)
 
         # Нарушение соглашения об унарности/бинарности новой операции:
-        self.assertRaises(ValueError, self._builder.add_unary_operation, 'o', self.constant, Fixation.PREFIX)
-        self.assertRaises(ValueError, self._builder.add_unary_operation, '+', self.multiple_operation, Fixation.PREFIX)
-        self.assertRaises(ValueError, self._builder.add_binary_operation, 'o', self.constant, Priority.HIGH)
-        self.assertRaises(ValueError, self._builder.add_binary_operation, '+', self.multiple_operation, Priority.HIGH)
+        self.assertRaises(ValueError, self._customizer.add_unary_operation, 'o', self.constant, Fixation.PREFIX)
+        self.assertRaises(ValueError, self._customizer.add_unary_operation, '+',
+                          self.multiple_operation, Fixation.PREFIX)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, 'o', self.constant, Priority.HIGH)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, '+',
+                          self.multiple_operation, Priority.HIGH)
 
 
 if __name__ == '__main__':

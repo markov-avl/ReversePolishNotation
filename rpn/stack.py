@@ -3,7 +3,4 @@ class Stack(list):
         self.append(item)
 
     def top(self) -> any:
-        return self[-1] if len(self) > 0 else None
-
-    def pop_top(self) -> any:
-        return self.pop(-1)
+        return self[-1] if len(self) else None

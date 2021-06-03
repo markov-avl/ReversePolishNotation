@@ -18,8 +18,8 @@ class ClosingBracket(Symbol):
     def push(self, stack: Stack, output: Output, last_symbol: any) -> None:
         for _ in range(len(stack)):
             if isinstance(stack.top(), OpeningBracket):
-                stack.pop_top()
+                stack.pop()
                 break
-            output.push(stack.pop_top())
+            output.push(stack.pop())
         else:
             raise SyntaxError('Too many closing brackets')

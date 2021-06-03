@@ -29,11 +29,11 @@ class RPN:
         self._output.clear()
         self._last_symbol = None
 
-    def _push_from_stack_to_output(self):
+    def _push_from_stack_to_output(self) -> None:
         for _ in range(len(self._stack)):
             if isinstance(self._stack.top(), OpeningBracket):
                 raise SyntaxError('Too many opening brackets')
-            self._output.push(self._stack.pop_top())
+            self._output.push(self._stack.pop())
 
     def push_expression(self, expression: str) -> None:
         self._clear()
@@ -54,8 +54,8 @@ class RPN:
             else:
                 item.push_out(self._stack)
         if not isinstance(self._stack.top(), complex) and float(self._stack.top()).is_integer():
-            return int(self._stack.pop_top())
-        return self._stack.pop_top()
+            return int(self._stack.pop())
+        return self._stack.pop()
 
     def get_rpn_expression(self, expression: str) -> str:
         self.push_expression(expression)

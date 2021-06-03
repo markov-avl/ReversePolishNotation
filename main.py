@@ -23,6 +23,7 @@ def main():
     builder.creator = rpn.creator
 
     builder.add_space()
+    builder.add_standard_operations()
 
     # builder.add_binary_operation(' ', add, Priority.LOW)
 
@@ -33,7 +34,7 @@ def main():
     # builder.add_all()
 
     # expression = '↓1↑↑↑ + 7 ^ 2 + 4!'
-    expression = '1 4 0 33'  # в таком случае тогда пробел будет работать как конкатенация D:
+    expression = '1 + 4 + 1 * 33'  # в таком случае тогда пробел будет работать как конкатенация D:
 
     print(rpn.get_rpn_expression(expression))
     rpn.push_expression(expression)

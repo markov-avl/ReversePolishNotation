@@ -31,7 +31,7 @@ class Operation(Symbol, ABC):
     def push_out(self, stack: Stack) -> None:
         args = list()
         for _ in range(self._degree):
-            args.append(stack.pop_top())
+            args.append(stack.pop())
         args.reverse()
         stack.push(self._function(*args))
 
@@ -61,8 +61,8 @@ class UnaryOperation(Operation):
     def _push(self, stack: Stack, output: Output) -> None:
         if self._fixation:
             output.push(self)
-            if len(stack) > 0 and isinstance(stack.top(), BinaryOperation) and stack.top().priority:
-                output.push(stack.pop_top())
+            if len(stack) and isinstance(stack.top(), BinaryOperation) and stack.top().priority:
+                output.push(stack.pop())
         else:
             stack.push(self)
 
@@ -87,7 +87,7 @@ class BinaryOperation(Operation):
 
     def _push(self, stack: Stack, output: Output) -> None:
         if isinstance(stack.top(), BinaryOperation) and stack.top().priority:
-            output.push(stack.pop_top())
+            output.push(stack.pop())
         stack.push(self)
 
 

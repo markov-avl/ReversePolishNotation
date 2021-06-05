@@ -47,7 +47,7 @@ class UnaryOperation(Operation):
     def __init__(self, symbol: str, function: Callable, fixation: Fixation) -> None:
         super().__init__(symbol, function)
         if self._degree != 1:
-            raise ValueError('Is not a unary operation')
+            raise ValueError('Is not an unary operation')
         self._fixation = fixation
 
     @property

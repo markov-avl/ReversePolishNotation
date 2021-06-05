@@ -11,42 +11,42 @@ from .brackets import OpeningBracket, ClosingBracket
 
 class Customizer:
     def __init__(self) -> None:
-        self._creator = None
+        self._alphabet = None
 
     @property
     def alphabet(self) -> Alphabet:
         return self.alphabet
 
     @alphabet.setter
-    def alphabet(self, creator: Alphabet) -> None:
-        self._creator = creator
+    def alphabet(self, alphabet: Alphabet) -> None:
+        self._alphabet = alphabet
 
     def add_plus(self) -> None:
-        self._creator.add(str(Plus()), Plus)
+        self._alphabet.add(str(Plus()), Plus)
 
     def add_minus(self) -> None:
-        self._creator.add(str(Minus()), Minus)
+        self._alphabet.add(str(Minus()), Minus)
 
     def add_multiplication(self) -> None:
-        self._creator.add(str(Multiplication()), Multiplication)
+        self._alphabet.add(str(Multiplication()), Multiplication)
 
     def add_division(self) -> None:
-        self._creator.add(str(Division()), Division)
+        self._alphabet.add(str(Division()), Division)
 
     def add_unary_operation(self, symbol: str, function: Callable, fixation: Fixation) -> None:
         UnaryOperation(symbol, function, fixation)
-        self._creator.add(symbol, lambda: UnaryOperation(symbol, function, fixation))
+        self._alphabet.add(symbol, lambda: UnaryOperation(symbol, function, fixation))
 
     def add_binary_operation(self, symbol: str, function: Callable, priority: Priority) -> None:
         BinaryOperation(symbol, function, priority)
-        self._creator.add(symbol, lambda: BinaryOperation(symbol, function, priority))
+        self._alphabet.add(symbol, lambda: BinaryOperation(symbol, function, priority))
 
     def add_space(self) -> None:
-        self._creator.add(str(Space()), Space)
+        self._alphabet.add(str(Space()), Space)
 
     def add_brackets(self) -> None:
-        self._creator.add(str(ClosingBracket()), ClosingBracket)
-        self._creator.add(str(OpeningBracket()), OpeningBracket)
+        self._alphabet.add(str(ClosingBracket()), ClosingBracket)
+        self._alphabet.add(str(OpeningBracket()), OpeningBracket)
 
     def add_standard_operations(self) -> None:
         self.add_plus()
@@ -60,4 +60,4 @@ class Customizer:
         self.add_brackets()
 
     def clear(self) -> None:
-        self._creator.clear()
+        self._alphabet.clear()

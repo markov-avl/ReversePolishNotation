@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Union, Callable
 
 from .alphabet import Alphabet
 
@@ -14,8 +14,8 @@ class Customizer:
         self._alphabet = None
 
     @property
-    def alphabet(self) -> Alphabet:
-        return self.alphabet
+    def alphabet(self) -> Union[Alphabet, None]:
+        return self._alphabet
 
     @alphabet.setter
     def alphabet(self, alphabet: Alphabet) -> None:

@@ -18,10 +18,11 @@ class Operation(Symbol, ABC):
     def __init__(self, symbol: str, function: Callable) -> None:
         super().__init__(symbol)
         self._function = function
-        self._degree = len(signature(function).parameters)
         args = map(str, dict(signature(function).parameters).values())
         if '*args' in args or '**kwargs' in args:
             self._degree = -1
+        else:
+            self._degree = len(args)
 
     @property
     def degree(self) -> int:
@@ -59,12 +60,11 @@ class UnaryOperation(Operation):
             if isinstance(last_symbol, UnaryOperation) and not last_symbol.fixation \
                     or isinstance(last_symbol, BinaryOperation) or isinstance(last_symbol, OpeningBracket) \
                     or last_symbol is None:
-                raise SyntaxError('Postfix unary operation cannot follow after empty space, other operation '
-                                  'and opening bracket')
+                raise SyntaxError('Postfix unary operation cannot follow after empty space, unary prefix operation, '
+                                  'binary operation and opening bracket')
         else:
             if isinstance(last_symbol, ClosingBracket):
-                raise SyntaxError('Prefix unary operation cannot follow after another prefix unary operation '
-                                  'and closing bracket')
+                raise SyntaxError('Prefix unary operation cannot follow after closing bracket')
         self._push(stack, output)
 
     def _push(self, stack: Stack, output: Output) -> None:
@@ -91,8 +91,8 @@ class BinaryOperation(Operation):
         if isinstance(last_symbol, UnaryOperation) and not last_symbol.fixation or \
                 isinstance(last_symbol, BinaryOperation) or isinstance(last_symbol, OpeningBracket) or \
                 last_symbol is None:
-            raise SyntaxError('Binary operation cannot follow after prefix unary operation, another binary operation'
-                              'and opening bracket')
+            raise SyntaxError('Binary operation cannot follow after empty space, prefix unary operation, '
+                              'another binary operation and opening bracket')
         self._push(stack, output)
 
     def _push(self, stack: Stack, output: Output) -> None:

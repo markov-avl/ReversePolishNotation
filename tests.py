@@ -23,6 +23,11 @@ class RPNTestCase(unittest.TestCase):
         return 0
 
     @staticmethod
+    def ternary_operation(a: bool, b: Union[int, float, complex],
+                          c: Union[int, float, complex]) -> Union[int, float, complex]:
+        return b if a else c
+
+    @staticmethod
     def multiple_operation(*args, **kwargs):
         return sum(args, kwargs.values())
 
@@ -93,9 +98,10 @@ class RPNTestCase(unittest.TestCase):
     def testOperationOverride(self) -> None:
         self._rpn.alphabet = self._customizer.alphabet = Alphabet()
         self._customizer.add_all()
+
+        # Переопределяем + как -, а - как +.
         self._customizer.add_binary_operation('+', sub, Priority.LOW)
         self._customizer.add_binary_operation('-', add, Priority.LOW)
-
         self.assertEqual(self._rpn.get_rpn_expression('100 + 50 + 25'), '100 50 + 25 +')
         self.assertAlmostEqual(self._rpn.solve(), 25)
         self.assertEqual(self._rpn.get_rpn_expression('100 - 50 - 25'), '100 50 - 25 -')
@@ -103,8 +109,14 @@ class RPNTestCase(unittest.TestCase):
         self.assertEqual(self._rpn.get_rpn_expression('100 * 2 + 50 * 2 - 25 * 2'), '100 2 * 50 2 * + 25 2 * -')
         self.assertAlmostEqual(self._rpn.solve(), 150)
 
-        self._customizer.add_binary_operation(' ', add, Priority.LOW)
+        # Переопределяем скобки как инкременты.
+        self._customizer.add_unary_operation('(', self.inc, Fixation.PREFIX)
+        self._customizer.add_unary_operation(')', self.inc, Fixation.POSTFIX)
+        self.assertEqual(self._rpn.get_rpn_expression('(4 * 3)'), '4 ( 3 ) *')
+        self.assertAlmostEqual(self._rpn.solve(), 20)
 
+        # Переопределяем пробел как +.
+        self._customizer.add_binary_operation(' ', add, Priority.LOW)
         self.assertEqual(self._rpn.get_rpn_expression('4 89 29 1 8 3'), '4 89 + 29 + 1 + 8 + 3 +'.replace('+', ' '))
         self.assertAlmostEqual(self._rpn.solve(), 134)
 
@@ -118,7 +130,7 @@ class RPNTestCase(unittest.TestCase):
         self.assertEqual(self._rpn.solve(), None)
         self.assertEqual(self._rpn.get_rpn_expression('(())'), '')
         self.assertEqual(self._rpn.solve(), None)
-        self.assertEqual(self._rpn.get_rpn_expression('( )'), '')
+        self.assertEqual(self._rpn.get_rpn_expression(' ( ) '), '')
         self.assertEqual(self._rpn.solve(), None)
 
     def testSyntaxError(self) -> None:
@@ -159,18 +171,20 @@ class RPNTestCase(unittest.TestCase):
         self._rpn.alphabet = self._customizer.alphabet = Alphabet()
         self._customizer.add_all()
 
-        # Добавление операции с недопустимым символом:
+        # Добавление операции с недопустимым обозначением:
         self.assertRaises(ValueError, self._customizer.add_binary_operation, '', add, Priority.LOW)
         self.assertRaises(ValueError, self._customizer.add_binary_operation, '0', add, Priority.LOW)
         self.assertRaises(ValueError, self._customizer.add_binary_operation, 'add', add, Priority.LOW)
 
         # Нарушение соглашения об унарности/бинарности новой операции:
         self.assertRaises(ValueError, self._customizer.add_unary_operation, 'o', self.constant, Fixation.PREFIX)
+        self.assertRaises(ValueError, self._customizer.add_unary_operation, '?',
+                          self.ternary_operation, Fixation.PREFIX)
         self.assertRaises(ValueError, self._customizer.add_unary_operation, '+',
                           self.multiple_operation, Fixation.PREFIX)
-        self.assertRaises(ValueError, self._customizer.add_binary_operation, 'o', self.constant, Priority.HIGH)
-        self.assertRaises(ValueError, self._customizer.add_binary_operation, '+',
-                          self.multiple_operation, Priority.HIGH)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, 'o', self.constant, Priority.LOW)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, '+', self.ternary_operation, Priority.LOW)
+        self.assertRaises(ValueError, self._customizer.add_binary_operation, '+', self.multiple_operation, Priority.LOW)
 
 
 if __name__ == '__main__':

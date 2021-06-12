@@ -6,3 +6,4 @@ class Fixation:
 class Priority:
     LOW = 0
     HIGH = 1
+    HIGHEST = 2

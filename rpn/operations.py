@@ -18,7 +18,7 @@ class Operation(Symbol, ABC):
     def __init__(self, symbol: str, function: Callable) -> None:
         super().__init__(symbol)
         self._function = function
-        args = map(str, dict(signature(function).parameters).values())
+        args = list(map(str, dict(signature(function).parameters).values()))
         if '*args' in args or '**kwargs' in args:
             self._degree = -1
         else:
